@@ -34,65 +34,51 @@ The work is divided into two experiments:
 
 ### 1. Fan-in and fan-out
 
-For a convolutional layer with kernel height \(K_H\), kernel width \(K_W\), \(C_{\text{in}}\) input channels, and \(C_{\text{out}}\) output channels:
+For a convolutional layer with kernel height $K_H$, kernel width $K_W$, $C_{\text{in}}$ input channels, and $C_{\text{out}}$ output channels:
 
-\[
-\boxed{\text{fan-in}=K_HK_WC_{\text{in}}}
-\]
+$$\text{fan-in} = K_H K_W C_{\text{in}}$$
 
-\[
-\boxed{\text{fan-out}=K_HK_WC_{\text{out}}}
-\]
+$$\text{fan-out} = K_H K_W C_{\text{out}}$$
 
 For a linear layer, fan-in and fan-out correspond to its input and output feature counts.
 
-**Example:** A \(5\times5\) convolution with 16 input channels and 32 output channels has:
+**Example:** A $5\times5$ convolution with 16 input channels and 32 output channels has:
 
-\[
-\text{fan-in}=5\times5\times16=400
-\]
+$$\text{fan-in} = 5\times5\times16 = 400$$
 
-\[
-\text{fan-out}=5\times5\times32=800
-\]
+$$\text{fan-out} = 5\times5\times32 = 800$$
 
 With a bias for each output channel, the total parameter count is:
 
-\[
-25(16)(32)+32=\boxed{12{,}832}
-\]
+$$25(16)(32) + 32 = 12{,}832$$
 
 Fan-in is **not** the total parameter count; it counts the weights contributing to one output value.
 
 ### 2. The three initialization rules
 
-Let \(n_{\text{in}}\) denote fan-in and \(n_{\text{out}}\) denote fan-out.
+Let $n_{\text{in}}$ denote fan-in and $n_{\text{out}}$ denote fan-out.
 
-| Initializer | Target weight variance | Normal distribution standard deviation | Uniform distribution bound |
+| Initializer | Target weight variance | Normal std. deviation | Uniform bound |
 |---|---|---|---|
-| **LeCun** | \(\displaystyle \frac{1}{n_{\text{in}}}\) | \(\displaystyle \sqrt{\frac{1}{n_{\text{in}}}}\) | \(\displaystyle a=\sqrt{\frac{3}{n_{\text{in}}}}\) |
-| **Xavier / Glorot** | \(\displaystyle \frac{2}{n_{\text{in}}+n_{\text{out}}}\) | \(\displaystyle \sqrt{\frac{2}{n_{\text{in}}+n_{\text{out}}}}\) | \(\displaystyle a=\sqrt{\frac{6}{n_{\text{in}}+n_{\text{out}}}}\) |
-| **He / Kaiming** | \(\displaystyle \frac{2}{n_{\text{in}}}\) | \(\displaystyle \sqrt{\frac{2}{n_{\text{in}}}}\) | \(\displaystyle a=\sqrt{\frac{6}{n_{\text{in}}}}\) |
+| **LeCun** | $\dfrac{1}{n_{\text{in}}}$ | $\sqrt{\dfrac{1}{n_{\text{in}}}}$ | $a=\sqrt{\dfrac{3}{n_{\text{in}}}}$ |
+| **Xavier / Glorot** | $\dfrac{2}{n_{\text{in}}+n_{\text{out}}}$ | $\sqrt{\dfrac{2}{n_{\text{in}}+n_{\text{out}}}}$ | $a=\sqrt{\dfrac{6}{n_{\text{in}}+n_{\text{out}}}}$ |
+| **He / Kaiming** | $\dfrac{2}{n_{\text{in}}}$ | $\sqrt{\dfrac{2}{n_{\text{in}}}}$ | $a=\sqrt{\dfrac{6}{n_{\text{in}}}}$ |
 
-The normal forms use zero-mean weights with the listed standard deviation. The uniform forms sample from \(U(-a,a)\).
+The normal forms use zero-mean weights with the listed standard deviation. The uniform forms sample from $U(-a, a)$.
 
 #### Why are the formulas different?
 
-- **LeCun:** uses variance \(1/n_{\text{in}}\) to maintain the scale of a linear signal under the stated assumptions.
+- **LeCun:** uses variance $1/n_{\text{in}}$ to maintain the scale of a linear signal under the stated assumptions.
 - **Xavier:** balances forward- and backward-pass scale using both fan-in and fan-out.
-- **He:** uses variance \(2/n_{\text{in}}\) to compensate for the reduction in mean-square signal caused by ReLU activations.
+- **He:** uses variance $2/n_{\text{in}}$ to compensate for the reduction in mean-square signal caused by ReLU activations.
 
 For a uniform random variable:
 
-\[
-\operatorname{Var}(U(-a,a))=\frac{a^2}{3}
-\]
+$$\mathrm{Var}\big(U(-a,a)\big) = \frac{a^2}{3}$$
 
-Therefore, to obtain a target variance \(v\):
+Therefore, to obtain a target variance $v$:
 
-\[
-\boxed{a=\sqrt{3v}}
-\]
+$$a = \sqrt{3v}$$
 
 ### 3. Implementations in PyTorch
 
@@ -148,15 +134,13 @@ nn.init.kaiming_uniform_(weight, nonlinearity="relu")
 
 ### 4. What the lab measures
 
-The CNN contains six \(3\times3\) convolutional layers with ReLU activations and no BatchNorm in the initial comparison. The lab records the activation root-mean-square (RMS):
+The CNN contains six $3\times3$ convolutional layers with ReLU activations and no BatchNorm in the initial comparison. The lab records the activation root-mean-square (RMS):
 
-\[
-\boxed{\operatorname{RMS}(h)=\sqrt{\operatorname{mean}(h^2)}}
-\]
+$$\mathrm{RMS}(h) = \sqrt{\mathrm{mean}(h^2)}$$
 
-It compares the PyTorch default, LeCun, Xavier, He, and a fixed standard deviation of \(0.01\).
+It compares the PyTorch default, LeCun, Xavier, He, and a fixed standard deviation of $0.01$.
 
-The manual's expected pattern is that **He keeps the activation scale near 1** across the tested layers, while the fixed \(0.01\) initialization causes the activations to shrink substantially. A short CIFAR-10 training comparison then demonstrates how initialization can affect early learning.
+The manual's expected pattern is that **He keeps the activation scale near 1** across the tested layers, while the fixed $0.01$ initialization causes the activations to shrink substantially. A short CIFAR-10 training comparison then demonstrates how initialization can affect early learning.
 
 ## 🔍 Experiment 02 — Visualizing a Trained CNN
 
@@ -175,29 +159,23 @@ The CNN is trained with He initialization. The lab then examines its filters, ac
 
 ### Grad-CAM: key equations
 
-Let \(S^c\) be the score for class \(c\), and let \(A^k\) be feature map \(k\) with \(Z\) spatial positions.
+Let $S^c$ be the score for class $c$, and let $A^k$ be feature map $k$ with $Z$ spatial positions.
 
-The importance weight for feature map \(k\) is:
+The importance weight for feature map $k$ is:
 
-\[
-\boxed{\alpha_k^c=\frac{1}{Z}\sum_{i,j}
-\frac{\partial S^c}{\partial A_{ij}^k}}
-\]
+$$\alpha_k^c = \frac{1}{Z} \sum_{i,j} \frac{\partial S^c}{\partial A_{ij}^k}$$
 
 The Grad-CAM map is:
 
-\[
-\boxed{L_{\mathrm{Grad-CAM}}^c=
-\operatorname{ReLU}\left(\sum_k\alpha_k^cA^k\right)}
-\]
+$$L^c_{\text{Grad-CAM}} = \mathrm{ReLU}\left(\sum_k \alpha_k^c A^k\right)$$
 
-The ReLU retains positive evidence for the target class. In this lab, the last convolutional block produces a coarse \(8\times8\) map, which is interpolated to the input's \(32\times32\) resolution for display.
+The ReLU retains positive evidence for the target class. In this lab, the last convolutional block produces a coarse $8\times8$ map, which is interpolated to the input's $32\times32$ resolution for display.
 
 ### Occlusion: the basic idea
 
 Occlusion hides a patch of the image and measures the change in the target-class score. If hiding a region lowers the score, that region may support the prediction.
 
-The manual's \(32\times32\) example uses a \(5\times5\) patch moved in steps of two pixels, requiring **196 forward passes**. Smaller patches give finer spatial detail; larger patches test broader regions.
+The manual's $32\times32$ example uses a $5\times5$ patch moved in steps of two pixels, requiring **196 forward passes**. Smaller patches give finer spatial detail; larger patches test broader regions.
 
 ## 🛠️ Tech Stack
 
@@ -234,11 +212,11 @@ pip install torch torchvision matplotlib captum
 
 ## 🧩 Further Experiments
 
-- Calculate fan-in, fan-out, and parameter count for \(3\times3\) and \(1\times1\) convolutions.
+- Calculate fan-in, fan-out, and parameter count for $3\times3$ and $1\times1$ convolutions.
 - Compare LeCun and Xavier on `nn.Linear(100, 100)`.
 - Generate Grad-CAM and Guided Backpropagation for the second-most-likely class.
 - Add BatchNorm after convolution layers and compare activation scales.
-- Compare \(3\times3\), \(5\times5\), and \(10\times10\) occlusion windows.
+- Compare $3\times3$, $5\times5$, and $10\times10$ occlusion windows.
 
 ## 🎯 Learning Outcomes
 
